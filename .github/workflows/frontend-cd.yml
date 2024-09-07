@@ -34,7 +34,18 @@ jobs:
           username: ${{ secrets.USERNAME }}      # The SSH username
           key: ${{ secrets.SSH_PRIVATE_KEY }}    # The private key stored in GitHub Secrets
           script: |
-            cd 3-tier-prod-cicd-main
+            cd /  # Navigate to the root directory
+            if [ ! -d "3-tier-prod-cicd" ]; then
+              echo "Directory 3-tier-prod-cicd does not exist."
+              exit 1
+            fi
+
+            cd 3-tier-prod-cicd
+            if [ ! -d ".git" ]; then
+              echo "Not a git repository."
+              exit 1
+            fi
+            
             git add .
             git stash
             git pull origin main
