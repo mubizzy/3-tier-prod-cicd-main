@@ -1,0 +1,75 @@
+version: '3.8'
+services:
+  nginx:
+    image: 'jc21/nginx-proxy-manager:2.10.4'
+    ports:
+      - '80:80'
+      - '443:443'
+      - '8090:81'
+    environment:
+      DB_SQLITE_FILE: "/data/database.sqlite"
+    volumes:
+      - data:/data
+      - letsencrypt:/etc/letsencrypt
+      - ./nginx/nginx.staging.conf:/data/nginx/custom/http_top.conf
+    restart: always
+    depends_on:
+      - frontend
+      - backend
+      - db
+      - adminer
+    networks:
+      - frontend-network
+      - backend-network
+
+  frontend:
+    build:
+      dockerfile: Dockerfile
+      context: ./frontend
+    env_file:
+      - frontend/.env.staging
+    depends_on:
+      - backend
+    networks:
+      - frontend-network
+      - backend-network
+
+  backend:
+    build:
+      dockerfile: Dockerfile
+      context: ./backend
+    env_file:
+      - backend/.env.staging
+    networks:
+      - backend-network
+      - db-network
+    depends_on:
+      - db
+
+  db:
+    image: postgres:13
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: app
+      POSTGRES_USER: app
+      POSTGRES_PASSWORD: changethis123
+    networks:
+      - db-network
+
+  adminer:
+    image: adminer
+    restart: always
+    environment:
+      ADMINER_DEFAULT_SERVER: db
+    networks:
+      - db-network
+
+networks:
+  frontend-network:
+  backend-network:
+  db-network:
+volumes:
+  postgres_data:
+  data:
+  letsencrypt:
