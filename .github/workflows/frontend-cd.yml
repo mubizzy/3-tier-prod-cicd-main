@@ -14,7 +14,8 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: Frontend
-      url: ${{ vars.URL }}
+      url: ${{ vars.URL }}  # Using a variable
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -22,14 +23,12 @@ jobs:
       - name: Use SSH Action
         uses: appleboy/ssh-action@v1.0.3
         with:
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.USERNAME }}
-          password: ${{ secrets.PASSWORD }}
+          host: ${{ secrets.HOST }}       # Using a secret
+          username: ${{ secrets.USERNAME }}  # Using a secret
+          password: ${{ secrets.PASSWORD }}  # Using a secret
           script: |
             cd 3-tier-prod-cicd
             git add .
             git stash
             git pull origin main
             docker compose up -d --no-deps --build frontend
-
-
