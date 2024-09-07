@@ -14,18 +14,25 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: Frontend
-      url: ${{ vars.URL }}  # Using a variable
+      url: ${{ vars.URL }}  # Variable for URL
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
+      - name: Install SSH Key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan ${{ secrets.HOST }} >> ~/.ssh/known_hosts
+
       - name: Use SSH Action
         uses: appleboy/ssh-action@v1.0.3
         with:
-          host: ${{ secrets.HOST }}       # Using a secret
-          username: ${{ secrets.USERNAME }}  # Using a secret
-          password: ${{ secrets.PASSWORD }}  # Using a secret
+          host: ${{ secrets.HOST }}             # The hostname or IP of your server
+          username: ${{ secrets.USERNAME }}      # The SSH username
+          key: ${{ secrets.SSH_PRIVATE_KEY }}    # The private key stored in GitHub Secrets
           script: |
             cd 3-tier-prod-cicd
             git add .
