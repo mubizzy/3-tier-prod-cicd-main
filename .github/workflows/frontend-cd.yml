@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: Frontend
-      url: ${{ vars.URL }}  # Variable for URL
+      url: ${{ vars.URL }}
 
     steps:
       - name: Checkout code
@@ -30,23 +30,26 @@ jobs:
       - name: Use SSH Action
         uses: appleboy/ssh-action@v1.0.3
         with:
-          host: ${{ secrets.HOST }}             # The hostname or IP of your server
-          username: ${{ secrets.USERNAME }}      # The SSH username
-          key: ${{ secrets.SSH_PRIVATE_KEY }}    # The private key stored in GitHub Secrets
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            cd /  # Navigate to the root directory
-            if [ ! -d "3-tier-prod-cicd" ]; then
-              echo "Directory 3-tier-prod-cicd does not exist."
-              exit 1
-            fi
+            cd /  # Navigate to root
 
-            cd 3-tier-prod-cicd
+            ls -la  # List directories to confirm the correct path
+            cd 3-tier-prod-cicd || exit 1  # Change to the correct directory
+
             if [ ! -d ".git" ]; then
               echo "Not a git repository."
               exit 1
             fi
             
-            git add .
             git stash
             git pull origin main
+            
+            if ! command -v docker &> /dev/null; then
+              echo "Docker could not be found."
+              exit 1
+            fi
+            
             docker compose up -d --no-deps --build frontend
