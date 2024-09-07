@@ -34,7 +34,7 @@ jobs:
           username: ${{ secrets.USERNAME }}      # The SSH username
           key: ${{ secrets.SSH_PRIVATE_KEY }}    # The private key stored in GitHub Secrets
           script: |
-            cd 3-tier-prod-cicd
+            cd 3-tier-prod-cicd-main
             git add .
             git stash
             git pull origin main
